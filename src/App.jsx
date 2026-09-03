@@ -12,7 +12,7 @@ export const App = () => {
   // Second 5 questions
   const [personalQuestionIndex, setPersonalQuestionIndex] = useState(0);
 
-  // Store answers
+  // Store personal answers
   const [answers, setAnswers] = useState(["", "", "", "", ""]);
 
   const questions = [
@@ -23,7 +23,6 @@ export const App = () => {
     "So... do you like me now? 😍",
   ];
 
-  // Second page questions
   const personalQuestions = [
     "Which country do you like? 🌍",
     "Which food do you like? 🍕",
@@ -35,6 +34,7 @@ export const App = () => {
   // =========================
   // NOPE BUTTON
   // =========================
+
   const handleNope = () => {
     setShowQuestions(true);
     setQuestionIndex(0);
@@ -43,6 +43,7 @@ export const App = () => {
   // =========================
   // NEXT FIRST QUESTION
   // =========================
+
   const nextQuestion = () => {
     if (questionIndex < questions.length - 1) {
       setQuestionIndex(questionIndex + 1);
@@ -51,8 +52,8 @@ export const App = () => {
 
   // =========================
   // YES BUTTON
-  // Go to personal questions
   // =========================
+
   const handleYes = () => {
     setShowQuestions(false);
     setShowPersonalQuestions(true);
@@ -62,17 +63,20 @@ export const App = () => {
   // =========================
   // HANDLE PERSONAL ANSWER
   // =========================
+
   const handleAnswerChange = (e) => {
     const newAnswers = [...answers];
+
     newAnswers[personalQuestionIndex] = e.target.value;
+
     setAnswers(newAnswers);
   };
 
   // =========================
   // NEXT PERSONAL QUESTION
   // =========================
+
   const nextPersonalQuestion = () => {
-    // Make sure answer is entered
     if (answers[personalQuestionIndex].trim() === "") {
       alert("Please enter your answer ❤️");
       return;
@@ -81,7 +85,6 @@ export const App = () => {
     if (personalQuestionIndex < personalQuestions.length - 1) {
       setPersonalQuestionIndex(personalQuestionIndex + 1);
     } else {
-      // After 5th question → Contact Form
       setShowPersonalQuestions(false);
       setShowContactForm(true);
     }
@@ -90,6 +93,7 @@ export const App = () => {
   // =========================
   // MAYBE BUTTON
   // =========================
+
   const handleMaybe = () => {
     alert("Aww 🥺 Take your time!");
   };
@@ -97,31 +101,68 @@ export const App = () => {
   // =========================
   // CONTACT FORM SUBMIT
   // =========================
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const formData = new FormData(e.target);
+
+    const name = formData.get("name");
+    const phone = formData.get("phone");
+    const instagram = formData.get("instagram");
+
+    // Create submission object
+    const newSubmission = {
+      id: Date.now(),
+      name: name,
+      phone: phone,
+      instagram: instagram,
+      answers: answers,
+      date: new Date().toLocaleString(),
+    };
+
+    // Get existing submissions
+    const existingSubmissions = JSON.parse(
+      localStorage.getItem("submissions") || "[]",
+    );
+
+    // Add new submission
+    existingSubmissions.push(newSubmission);
+
+    // Save to localStorage
+    localStorage.setItem("submissions", JSON.stringify(existingSubmissions));
+
     alert("Thank you ❤️ Your details have been submitted!");
 
-    console.log("Form submitted");
-    console.log("Personal Answers:", answers);
+    console.log("New Submission:", newSubmission);
+
+    // Reset form
+    e.target.reset();
+
+    // Reset answers
+    setAnswers(["", "", "", "", ""]);
+    setPersonalQuestionIndex(0);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4 py-8">
       <div
         className="
           text-white
-          border-2 border-white
+          border-2
+          border-white
           w-full
           max-w-sm
           p-6
           rounded-3xl
           text-center
+          shadow-2xl
         "
       >
         {/* =========================
             DOG IMAGE
         ========================== */}
+
         <img
           src={dog}
           alt="dog"
@@ -131,12 +172,16 @@ export const App = () => {
             mx-auto
             object-cover
             rounded-full
+            border-4
+            border-pink-500
+            shadow-lg
           "
         />
 
         {/* =====================================================
             CONTACT FORM
         ===================================================== */}
+
         {showContactForm ? (
           <>
             <h1 className="text-2xl font-bold mt-5">❤️ Welcome!</h1>
@@ -147,10 +192,12 @@ export const App = () => {
 
             <form onSubmit={handleSubmit} className="mt-6 text-left">
               {/* NAME */}
+
               <label className="block text-sm font-semibold mb-2">Name</label>
 
               <input
                 type="text"
+                name="name"
                 placeholder="Enter your name"
                 required
                 className="
@@ -169,12 +216,14 @@ export const App = () => {
               />
 
               {/* PHONE */}
+
               <label className="block text-sm font-semibold mb-2">
                 Phone Number
               </label>
 
               <input
                 type="tel"
+                name="phone"
                 placeholder="Enter your phone number"
                 required
                 pattern="[0-9]{10}"
@@ -195,12 +244,14 @@ export const App = () => {
               />
 
               {/* INSTAGRAM */}
+
               <label className="block text-sm font-semibold mb-2">
                 Instagram ID
               </label>
 
               <input
                 type="text"
+                name="instagram"
                 placeholder="@yourinstagram"
                 required
                 className="
@@ -219,6 +270,7 @@ export const App = () => {
               />
 
               {/* SUBMIT */}
+
               <button
                 type="submit"
                 className="
@@ -243,23 +295,20 @@ export const App = () => {
           /* =====================================================
              PERSONAL QUESTIONS PAGE
           ===================================================== */
+
           <>
             <div className="mt-5">
-              {/* PAGE TITLE */}
               <h1 className="text-2xl font-bold">💕 Tell Me About You</h1>
 
-              {/* QUESTION COUNTER */}
               <p className="text-sm text-gray-400 mt-2">
                 Question {personalQuestionIndex + 1} of{" "}
                 {personalQuestions.length}
               </p>
 
-              {/* QUESTION */}
               <h2 className="text-xl font-bold mt-6">
                 {personalQuestions[personalQuestionIndex]}
               </h2>
 
-              {/* ANSWER TEXT BOX */}
               <input
                 type="text"
                 value={answers[personalQuestionIndex]}
@@ -282,7 +331,6 @@ export const App = () => {
                 "
               />
 
-              {/* NEXT / FINISH BUTTON */}
               <button
                 onClick={nextPersonalQuestion}
                 className="
@@ -309,11 +357,13 @@ export const App = () => {
           /* =====================================================
              MAIN QUESTION
           ===================================================== */
+
           <>
             <div className="text-lg font-bold mt-4">DO YOU LIKE ME ♥️</div>
 
             <div className="flex justify-center gap-4 mt-5">
               {/* NOPE */}
+
               <button
                 onClick={handleNope}
                 className="
@@ -335,6 +385,7 @@ export const App = () => {
               </button>
 
               {/* LIKE */}
+
               <button
                 onClick={handleYes}
                 className="
@@ -359,21 +410,19 @@ export const App = () => {
           </>
         ) : (
           /* =====================================================
-             FIRST 5 QUESTIONS AFTER NOPE
+             FIRST 5 QUESTIONS
           ===================================================== */
+
           <>
             <div className="mt-5">
-              {/* QUESTION COUNTER */}
               <p className="text-sm text-gray-400">
                 Question {questionIndex + 1} of {questions.length}
               </p>
 
-              {/* QUESTION */}
               <h2 className="text-xl font-bold mt-3">
                 {questions[questionIndex]}
               </h2>
 
-              {/* NEXT BUTTON */}
               {questionIndex < questions.length - 1 ? (
                 <button
                   onClick={nextQuestion}
@@ -394,7 +443,6 @@ export const App = () => {
                   Next ➡️
                 </button>
               ) : (
-                /* FINAL QUESTION BUTTONS */
                 <div
                   className="
                     flex
@@ -406,6 +454,7 @@ export const App = () => {
                   "
                 >
                   {/* YES */}
+
                   <button
                     onClick={handleYes}
                     className="
@@ -425,6 +474,7 @@ export const App = () => {
                   </button>
 
                   {/* MAYBE */}
+
                   <button
                     onClick={handleMaybe}
                     className="
@@ -453,4 +503,3 @@ export const App = () => {
 };
 
 export default App;
- 
